@@ -44,15 +44,27 @@ if(!userAddress){
 return;
 }
 
-const qr =
-`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${userAddress}`;
-
-document.getElementById("qrCode").src = qr;
-
-document.getElementById("walletAddress").innerText = userAddress;
-
 document.getElementById("receiveModal")
 .classList.remove("hidden");
+
+/* CLEAR OLD QR */
+const qrContainer =
+document.getElementById("qrCode");
+
+qrContainer.innerHTML = "";
+
+/* GENERATE FAST QR LOCALLY */
+new QRCode(qrContainer, {
+text: userAddress,
+width: 220,
+height: 220,
+colorDark: "#000000",
+colorLight: "#ffffff",
+correctLevel: QRCode.CorrectLevel.H
+});
+
+document.getElementById("walletAddress").innerText =
+userAddress;
 
 }
 
