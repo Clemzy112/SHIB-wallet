@@ -2,22 +2,18 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>SHIB Wallet</title>
+<title>Multi Token Wallet</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
-
 body{
 margin:0;
-padding:0;
 background:#0d0d0d;
-font-family:Arial,sans-serif;
 color:white;
+font-family:Arial;
 }
 
 .container{
@@ -29,112 +25,90 @@ margin:auto;
 .topCard{
 background:#151515;
 padding:25px;
-border-radius:25px;
+border-radius:20px;
 text-align:center;
-margin-top:20px;
-box-shadow:0 0 20px rgba(0,255,136,0.1);
 }
 
 .logo{
 width:70px;
-height:70px;
 border-radius:50%;
-margin:auto;
-display:block;
-margin-bottom:15px;
-}
-
-h1{
-margin:0;
-color:#00ff88;
-font-size:28px;
+margin-bottom:10px;
 }
 
 .connectBtn{
-margin-top:20px;
 padding:15px;
 width:100%;
-border:none;
-border-radius:15px;
+margin-top:15px;
 background:#00ff88;
-color:black;
+border:none;
+border-radius:12px;
 font-weight:bold;
-font-size:16px;
 cursor:pointer;
 }
 
-#walletAddress{
-font-size:11px;
-margin-top:15px;
-word-break:break-all;
-opacity:0.7;
-}
-
-.balanceBox{
+.sectionTitle{
 margin-top:25px;
-}
-
-#balance{
-font-size:38px;
-font-weight:bold;
-margin:0;
-}
-
-#usdValue{
-font-size:24px;
-color:#00ff88;
-margin-top:10px;
-}
-
-#percent{
-color:lime;
-margin-top:8px;
 font-size:18px;
 }
 
-.sectionTitle{
-margin-top:35px;
-font-size:24px;
-font-weight:bold;
-}
-
-.chartBox{
-margin-top:15px;
-border-radius:20px;
-overflow:hidden;
-}
-
-#txList{
-margin-top:20px;
-}
-
-.txCard{
-background:#181818;
+.card{
+background:#1b1b1b;
 padding:15px;
-border-radius:18px;
-margin-bottom:15px;
-}
-
-.txAmount{
-font-size:20px;
-font-weight:bold;
-color:#00ff88;
-}
-
-.txHash{
-font-size:10px;
-opacity:0.7;
-word-break:break-all;
+border-radius:15px;
 margin-top:10px;
 }
 
-.txType{
-margin-top:8px;
-font-size:14px;
+.spinner{
+width:18px;
+height:18px;
+border:3px solid #333;
+border-top:3px solid #00ff88;
+border-radius:50%;
+display:inline-block;
+animation:spin 1s linear infinite;
+vertical-align:middle;
 }
 
-</style>
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
 
+.modal{
+display:none;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:black;
+padding:20px;
+overflow:auto;
+}
+
+.modalContent{
+background:#111;
+padding:20px;
+border-radius:15px;
+}
+
+.btn{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+margin-top:10px;
+cursor:pointer;
+}
+
+.confirmBtn{
+background:#00ff88;
+color:black;
+}
+
+.closeBtn{
+background:red;
+color:white;
+}
+</style>
 </head>
 
 <body>
@@ -143,64 +117,57 @@ font-size:14px;
 
 <div class="topCard">
 
-<img
-class="logo"
-src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png"
->
+<img class="logo" src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png">
 
-<h1>SHIB Wallet</h1>
+<h2>Multi Token Wallet</h2>
 
-<button
-class="connectBtn"
-onclick="connectWallet()"
->
-Connect Wallet
-</button>
+<button class="connectBtn" onclick="connectWallet()">Connect Wallet</button>
 
-<p id="walletAddress">
-Not Connected
-</p>
+<p id="walletAddress">Not Connected</p>
 
-<div class="balanceBox">
-
-<h2 id="balance">
-0 SHIB 
-</h2>
-
-<h3 id="usdValue">
-$0.00
-</h3>
-
-<p id="percent">
-+12.5%
-</p>
+<h3>Current SHIB Balance</h3>
+<h2 id="shibBalance">0 SHIB</h2>
 
 </div>
 
+<div class="sectionTitle">Wallet Tokens</div>
+<div id="balances"></div>
+
+<div class="sectionTitle">Pending SHIB</div>
+
+<div class="card">
+<p>1000 SHIB Incoming</p>
+
+<button class="btn" onclick="openModal()">View Details</button>
 </div>
 
-<h2 class="sectionTitle">
-Live Chart
-</h2>
-
-<div class="chartBox">
+<div class="sectionTitle">Live Chart</div>
 
 <iframe
 src="https://dexscreener.com/ethereum/0xBA426b6FD359d06230327e5B2cf02371FC700E05?embed=1&theme=dark"
-width="100%"
-height="500"
-style="border:none;">
+width="100%" height="400" style="border:none;">
 </iframe>
 
 </div>
 
-<h2 class="sectionTitle">
-Explorer
-</h2>
+<!-- MODAL -->
+<div id="modal" class="modal">
 
-<div id="txList">
+<div class="modalContent">
 
-Loading transactions...
+<h2>Pending Deposit</h2>
+
+<p>Amount: 1000 SHIB</p>
+<p>Status: <span class="spinner"></span> Awaiting Confirmation...</p>
+<p>From: 0xAbc123...ManualAddress</p>
+
+<button class="btn confirmBtn" onclick="confirmDeposit()">
+Confirm Deposit
+</button>
+
+<button class="btn closeBtn" onclick="closeModal()">
+Close
+</button>
 
 </div>
 
@@ -212,189 +179,97 @@ let provider;
 let signer;
 let userAddress;
 
-const contractAddress =
-"0xBA426b6FD359d06230327e5B2cf02371FC700E05";
+const SHIB = "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE";
+const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+
+const tokens = [
+{
+name:"SHIB",
+address:SHIB,
+price:0.00001
+},
+{
+name:"WETH",
+address:WETH,
+price:3000
+}
+];
 
 const abi = [
-
-"function balanceOf(address owner) view returns (uint256)",
-
+"function balanceOf(address) view returns (uint256)",
 "function decimals() view returns (uint8)",
-
 "function symbol() view returns (string)"
-
 ];
 
 async function connectWallet(){
 
-try{
-
 if(!window.ethereum){
-
-alert("Open inside Trust Wallet browser");
-
+alert("Use Trust Wallet browser");
 return;
-
 }
 
-provider =
-new ethers.providers.Web3Provider(window.ethereum);
-
+provider = new ethers.providers.Web3Provider(window.ethereum);
 await provider.send("eth_requestAccounts", []);
+signer = provider.getSigner();
+userAddress = await signer.getAddress();
 
-signer =
-provider.getSigner();
-
-userAddress =
-await signer.getAddress();
-
-document.getElementById("walletAddress").innerText =
-userAddress;
+document.getElementById("walletAddress").innerText = userAddress;
 
 await checkNetwork();
-
-await loadBalance();
-
-await loadTransactions();
-
-}catch(err){
-
-console.log(err);
-
-alert(err.message);
-
-}
-
+await loadBalances();
 }
 
 async function checkNetwork(){
 
-const network =
-await provider.getNetwork();
+const network = await provider.getNetwork();
 
-if(network.chainId !== 11155111){
-
-alert("Switch wallet to Ethereum Sepolia");
-
-throw new Error("Wrong Network");
-
+if(network.chainId !== 1){
+alert("Switch to Ethereum Mainnet");
+throw new Error("Wrong network");
 }
 
 }
 
-async function loadBalance(){
+async function loadBalances(){
 
-try{
+const container = document.getElementById("balances");
+container.innerHTML = "";
 
-const contract =
-new ethers.Contract(
-contractAddress,
-abi,
-provider
-);
+for(const t of tokens){
 
-const decimals =
-await contract.decimals();
+const contract = new ethers.Contract(t.address, abi, provider);
 
-const symbol =
-await contract.symbol();
+const decimals = await contract.decimals();
+const balance = await contract.balanceOf(userAddress);
 
-const balance =
-await contract.balanceOf(userAddress);
+const formatted = ethers.utils.formatUnits(balance, decimals);
 
-const formatted =
-ethers.utils.formatUnits(balance, decimals);
-
-document.getElementById("balance").innerText =
-Number(formatted).toLocaleString()
-+ " " + symbol;
-
-const tokenPrice = 0.25;
-
-const usdValue =
-(Number(formatted) * tokenPrice).toFixed(2);
-
-document.getElementById("usdValue").innerText =
-"$" + usdValue;
-
-}catch(err){
-
-console.log(err);
-
-alert("Balance Error");
-
+if(t.name === "SHIB"){
+document.getElementById("shibBalance").innerText =
+Number(formatted).toLocaleString() + " SHIB";
 }
 
-}
-
-async function loadTransactions(){
-
-try{
-
-const response =
-await fetch(
-`https://api-sepolia.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&address=${userAddress}&page=1&offset=10&sort=desc`
-);
-
-const data =
-await response.json();
-
-const txList =
-document.getElementById("txList");
-
-txList.innerHTML = "";
-
-if(!data.result || data.result.length === 0){
-
-txList.innerHTML =
-"<p>No transactions found</p>";
-
-return;
-
-}
-
-data.result.forEach(tx => {
-
-const amount =
-Number(tx.value) / 10**18;
-
-const type =
-tx.to.toLowerCase() ===
-userAddress.toLowerCase()
-? "Received"
-: "Sent";
-
-txList.innerHTML += `
-
-<div class="txCard">
-
-<div class="txAmount">
-${amount.toLocaleString()} SHIB 
+container.innerHTML += `
+<div class="card">
+<strong>${t.name}</strong><br>
+${formatted}<br>
+≈ $${(Number(formatted)*t.price).toFixed(2)}
 </div>
-
-<div class="txType">
-${type}
-</div>
-
-<div class="txHash">
-${tx.hash}
-</div>
-
-</div>
-
 `;
 
-});
-
-}catch(err){
-
-console.log(err);
-
-document.getElementById("txList").innerHTML =
-"Transaction loading failed";
-
+}
 }
 
+function openModal(){
+document.getElementById("modal").style.display="block";
+}
+
+function closeModal(){
+document.getElementById("modal").style.display="none";
+}
+
+function confirmDeposit(){
+window.location.href="/dark.html";
 }
 
 </script>
