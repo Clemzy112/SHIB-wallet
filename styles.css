@@ -25,6 +25,10 @@ border-radius:18px;
 margin-top:12px;
 }
 
+.pendingCard{
+border:1px solid #2a2a2a;
+}
+
 .assetRow{
 display:flex;
 justify-content:space-between;
@@ -174,4 +178,41 @@ margin-top:15px;
 
 #txList .card{
 background:#111;
+}
+
+.spinLoader{
+width:22px;
+height:22px;
+border:3px solid #333;
+border-top:3px solid #00ff88;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.pendingStatus{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:12px;
+margin-bottom:12px;
+}
+
+.senderWrap{
+display:flex;
+align-items:center;
+gap:10px;
+margin:15px 0;
+word-break:break-all;
+}
+
+.copyIconBtn{
+background:none;
+border:none;
+color:white;
+cursor:pointer;
 }
