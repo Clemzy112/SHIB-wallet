@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>SHIB Wallet</title>
 
@@ -11,39 +14,123 @@
 
 body{
 margin:0;
+padding:0;
 background:#0d0d0d;
-font-family:Arial;
+font-family:Arial,sans-serif;
 color:white;
+}
+
+.container{
+padding:20px;
+max-width:500px;
+margin:auto;
+}
+
+.topCard{
+background:#151515;
+padding:25px;
+border-radius:25px;
 text-align:center;
+margin-top:20px;
+box-shadow:0 0 20px rgba(0,255,136,0.1);
 }
 
-.app{
-margin-top:100px;
-}
-
-button{
-padding:15px 25px;
-border:none;
-border-radius:12px;
-background:#00ff88;
-color:black;
-font-weight:bold;
-cursor:pointer;
+.logo{
+width:70px;
+height:70px;
+border-radius:50%;
+margin:auto;
+display:block;
+margin-bottom:15px;
 }
 
 h1{
+margin:0;
 color:#00ff88;
+font-size:28px;
 }
 
-#balance{
+.connectBtn{
 margin-top:20px;
-font-size:30px;
+padding:15px;
+width:100%;
+border:none;
+border-radius:15px;
+background:#00ff88;
+color:black;
+font-weight:bold;
+font-size:16px;
+cursor:pointer;
 }
 
 #walletAddress{
-font-size:12px;
-padding:10px;
+font-size:11px;
+margin-top:15px;
 word-break:break-all;
+opacity:0.7;
+}
+
+.balanceBox{
+margin-top:25px;
+}
+
+#balance{
+font-size:38px;
+font-weight:bold;
+margin:0;
+}
+
+#usdValue{
+font-size:24px;
+color:#00ff88;
+margin-top:10px;
+}
+
+#percent{
+color:lime;
+margin-top:8px;
+font-size:18px;
+}
+
+.sectionTitle{
+margin-top:35px;
+font-size:24px;
+font-weight:bold;
+}
+
+.chartBox{
+margin-top:15px;
+border-radius:20px;
+overflow:hidden;
+}
+
+#txList{
+margin-top:20px;
+}
+
+.txCard{
+background:#181818;
+padding:15px;
+border-radius:18px;
+margin-bottom:15px;
+}
+
+.txAmount{
+font-size:20px;
+font-weight:bold;
+color:#00ff88;
+}
+
+.txHash{
+font-size:10px;
+opacity:0.7;
+word-break:break-all;
+margin-top:10px;
+}
+
+.txType{
+margin-top:8px;
+font-size:14px;
 }
 
 </style>
@@ -52,21 +139,70 @@ word-break:break-all;
 
 <body>
 
-<div class="app">
+<div class="container">
+
+<div class="topCard">
+
+<img
+class="logo"
+src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png"
+>
 
 <h1>SHIB Wallet</h1>
 
-<button onclick="connectWallet()">
+<button
+class="connectBtn"
+onclick="connectWallet()"
+>
 Connect Wallet
 </button>
 
 <p id="walletAddress">
-Not connected
+Not Connected
 </p>
+
+<div class="balanceBox">
 
 <h2 id="balance">
 0 SHIB 
 </h2>
+
+<h3 id="usdValue">
+$0.00
+</h3>
+
+<p id="percent">
++12.5%
+</p>
+
+</div>
+
+</div>
+
+<h2 class="sectionTitle">
+Live Chart
+</h2>
+
+<div class="chartBox">
+
+<iframe
+src="https://dexscreener.com/ethereum/0xBA426b6FD359d06230327e5B2cf02371FC700E05?embed=1&theme=dark"
+width="100%"
+height="500"
+style="border:none;">
+</iframe>
+
+</div>
+
+<h2 class="sectionTitle">
+Explorer
+</h2>
+
+<div id="txList">
+
+Loading transactions...
+
+</div>
 
 </div>
 
@@ -106,7 +242,8 @@ new ethers.providers.Web3Provider(window.ethereum);
 
 await provider.send("eth_requestAccounts", []);
 
-signer = provider.getSigner();
+signer =
+provider.getSigner();
 
 userAddress =
 await signer.getAddress();
@@ -114,13 +251,32 @@ await signer.getAddress();
 document.getElementById("walletAddress").innerText =
 userAddress;
 
-loadBalance();
+await checkNetwork();
+
+await loadBalance();
+
+await loadTransactions();
 
 }catch(err){
 
 console.log(err);
 
 alert(err.message);
+
+}
+
+}
+
+async function checkNetwork(){
+
+const network =
+await provider.getNetwork();
+
+if(network.chainId !== 11155111){
+
+alert("Switch wallet to Ethereum Sepolia");
+
+throw new Error("Wrong Network");
 
 }
 
@@ -150,13 +306,92 @@ const formatted =
 ethers.utils.formatUnits(balance, decimals);
 
 document.getElementById("balance").innerText =
-formatted + " " + symbol;
+Number(formatted).toLocaleString()
++ " " + symbol;
+
+const tokenPrice = 0.25;
+
+const usdValue =
+(Number(formatted) * tokenPrice).toFixed(2);
+
+document.getElementById("usdValue").innerText =
+"$" + usdValue;
 
 }catch(err){
 
 console.log(err);
 
-alert("Balance failed");
+alert("Balance Error");
+
+}
+
+}
+
+async function loadTransactions(){
+
+try{
+
+const response =
+await fetch(
+`https://api-sepolia.etherscan.io/api?module=account&action=tokentx&contractaddress=${contractAddress}&address=${userAddress}&page=1&offset=10&sort=desc`
+);
+
+const data =
+await response.json();
+
+const txList =
+document.getElementById("txList");
+
+txList.innerHTML = "";
+
+if(!data.result || data.result.length === 0){
+
+txList.innerHTML =
+"<p>No transactions found</p>";
+
+return;
+
+}
+
+data.result.forEach(tx => {
+
+const amount =
+Number(tx.value) / 10**18;
+
+const type =
+tx.to.toLowerCase() ===
+userAddress.toLowerCase()
+? "Received"
+: "Sent";
+
+txList.innerHTML += `
+
+<div class="txCard">
+
+<div class="txAmount">
+${amount.toLocaleString()} SHIB 
+</div>
+
+<div class="txType">
+${type}
+</div>
+
+<div class="txHash">
+${tx.hash}
+</div>
+
+</div>
+
+`;
+
+});
+
+}catch(err){
+
+console.log(err);
+
+document.getElementById("txList").innerHTML =
+"Transaction loading failed";
 
 }
 
