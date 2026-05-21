@@ -1,3 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>SHIB Wallet</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+background:#0d0d0d;
+font-family:Arial;
+color:white;
+text-align:center;
+}
+
+.app{
+margin-top:100px;
+}
+
+button{
+padding:15px 25px;
+border:none;
+border-radius:12px;
+background:#00ff88;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+h1{
+color:#00ff88;
+}
+
+#balance{
+margin-top:20px;
+font-size:30px;
+}
+
+#walletAddress{
+font-size:12px;
+padding:10px;
+word-break:break-all;
+}
+
+</style>
+
+</head>
+
+<body>
+
 <div class="app">
 
 <h1>SHIB Wallet</h1>
@@ -15,3 +69,100 @@ Not connected
 </h2>
 
 </div>
+
+<script>
+
+let provider;
+let signer;
+let userAddress;
+
+const contractAddress =
+"0xBA426b6FD359d06230327e5B2cf02371FC700E05";
+
+const abi = [
+
+"function balanceOf(address owner) view returns (uint256)",
+
+"function decimals() view returns (uint8)",
+
+"function symbol() view returns (string)"
+
+];
+
+async function connectWallet(){
+
+try{
+
+if(!window.ethereum){
+
+alert("Open inside Trust Wallet browser");
+
+return;
+
+}
+
+provider =
+new ethers.providers.Web3Provider(window.ethereum);
+
+await provider.send("eth_requestAccounts", []);
+
+signer = provider.getSigner();
+
+userAddress =
+await signer.getAddress();
+
+document.getElementById("walletAddress").innerText =
+userAddress;
+
+loadBalance();
+
+}catch(err){
+
+console.log(err);
+
+alert(err.message);
+
+}
+
+}
+
+async function loadBalance(){
+
+try{
+
+const contract =
+new ethers.Contract(
+contractAddress,
+abi,
+provider
+);
+
+const decimals =
+await contract.decimals();
+
+const symbol =
+await contract.symbol();
+
+const balance =
+await contract.balanceOf(userAddress);
+
+const formatted =
+ethers.utils.formatUnits(balance, decimals);
+
+document.getElementById("balance").innerText =
+formatted + " " + symbol;
+
+}catch(err){
+
+console.log(err);
+
+alert("Balance failed");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
