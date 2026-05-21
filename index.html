@@ -1,368 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SHIB Multi Wallet</title>
+
+<title>Trust Wallet Multi Asset Dashboard</title>
+
+<link rel="stylesheet" href="styles.css">
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
-<style>
-body{
-margin:0;
-background:#0b0b0b;
-color:white;
-font-family:Arial;
-}
-
-.container{max-width:520px;margin:auto;padding:16px;}
-
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:10px;
-}
-
-.btn{
-background:#00ff88;
-border:none;
-padding:10px 14px;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-}
-
-.disconnect{background:#ff3b3b;color:white;}
-
-.card{
-background:#151515;
-padding:15px;
-border-radius:16px;
-margin-top:12px;
-}
-
-.row{
-display:flex;
-align-items:center;
-justify-content:space-between;
-}
-
-.tokenLogo{
-width:32px;
-height:32px;
-border-radius:50%;
-}
-
-.balanceTitle{font-size:16px;margin-top:10px;}
-.balanceBig{font-size:26px;font-weight:bold;}
-.usd{color:#00ff88;margin-top:4px;}
-
-.actionRow{
-display:flex;
-gap:10px;
-margin-top:10px;
-}
-
-.iconBtn{
-flex:1;
-padding:10px;
-border-radius:10px;
-border:none;
-background:#222;
-color:white;
-cursor:pointer;
-display:flex;
-justify-content:center;
-align-items:center;
-gap:6px;
-}
-
-svg{width:18px;height:18px;fill:white;}
-
-/* MODAL */
-.modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-display:none;
-overflow:auto;
-}
-
-.modalContent{
-padding:15px;
-}
-
-iframe{
-width:100%;
-height:420px;
-border:none;
-border-radius:12px;
-margin-top:10px;
-}
-
-.backBtn{
-width:100%;
-padding:12px;
-background:#222;
-border:none;
-color:white;
-border-radius:10px;
-margin-top:10px;
-display:flex;
-justify-content:center;
-gap:8px;
-align-items:center;
-cursor:pointer;
-}
-</style>
 </head>
 
 <body>
 
 <div class="container">
 
+<!-- TOP BAR -->
 <div class="topbar">
 
-<button id="connectBtn" class="btn" onclick="toggleWallet()">
+<button id="connectBtn" class="mainBtn">
 Connect DApp
 </button>
 
 </div>
 
-<!-- SHIB MAIN -->
-<div class="card" id="shibCard">
+<!-- NETWORK WARNING MODAL -->
+<div id="networkModal" class="modal hidden">
 
-<div class="row">
-<img class="tokenLogo" src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png">
-<strong>SHIBA INU</strong>
-<span id="shibUsd">$0.00</span>
+<div class="modalContent">
+
+<h2>
+Wrong Network Selected
+</h2>
+
+<p>
+Select Ethereum Mainnet
+</p>
+
+<div class="modalActions">
+
+<button id="cancelNetwork" class="dangerBtn">
+Cancel
+</button>
+
+<button id="switchNetwork" class="mainBtn">
+Select Network
+</button>
+
 </div>
 
-<div class="balanceTitle">Current SHIB Balance</div>
-<div class="balanceBig" id="shibBalance">0 SHIB</div>
+</div>
 
-<div class="actionRow">
+</div>
 
-<button class="iconBtn" onclick="sendToken()">
-<svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+<!-- SHIB MAIN CARD -->
+<div class="card">
+
+<div class="assetRow">
+
+<div class="assetInfo">
+
+<img
+src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png"
+class="tokenLogo"
+>
+
+<div>
+
+<h3>
+SHIBA INU
+</h3>
+
+<p>
+Current SHIB Balance
+</p>
+
+</div>
+
+</div>
+
+<div>
+
+<h3 id="shibUsd">
+$0.00
+</h3>
+
+</div>
+
+</div>
+
+<h1 id="shibBalance">
+0 SHIB
+</h1>
+
+<div class="buttonRow">
+
+<!-- SEND -->
+<button class="actionBtn" id="sendBtn">
+
+<svg viewBox="0 0 24 24">
+<path d="M2 21l21-9L2 3v7l15 2-15 2z"></path>
+</svg>
+
 Send
+
 </button>
 
-<button class="iconBtn" onclick="receiveToken()">
-<svg viewBox="0 0 24 24"><path d="M12 2v14m0 0l-5-5m5 5l5-5"/></svg>
+<!-- RECEIVE -->
+<button class="actionBtn" id="receiveBtn">
+
+<svg viewBox="0 0 24 24">
+<path d="M12 2v14m0 0l-5-5m5 5l5-5"></path>
+</svg>
+
 Receive
+
 </button>
 
 </div>
 
 </div>
 
-<!-- PENDING (HIDDEN UNTIL CONNECTED) -->
-<div class="card" id="pendingCard" style="display:none;">
+<!-- PENDING SHIB -->
+<div id="pendingBox" class="card hidden">
 
-<div class="row">
-<img class="tokenLogo" src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png">
-<strong>Pending SHIB</strong>
+<div class="assetInfo">
+
+<img
+src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png"
+class="tokenLogo"
+>
+
+<div>
+
+<h3>
+Pending SHIB
+</h3>
+
+<p>
+1000 SHIB Incoming
+</p>
+
 </div>
 
-<p>1000 SHIB Incoming</p>
+</div>
 
-<button class="btn" onclick="openPending()">View Details</button>
+<button id="viewPending" class="mainBtn">
+View Details
+</button>
 
 </div>
 
 <!-- OTHER ASSETS -->
-<h3>Other Assets</h3>
+<h2 class="sectionTitle">
+Other Assets
+</h2>
 
-<div class="card" onclick="openAsset('ETH')">
-<div class="row">
-<img class="tokenLogo" src="https://cryptologos.cc/logos/ethereum-eth-logo.png">
-<span>ETH</span>
-</div>
+<div id="assetList"></div>
+
+<!-- TRANSACTION HISTORY -->
+<h2 class="sectionTitle">
+Transaction History
+</h2>
+
+<div id="txList"></div>
+
 </div>
 
-<div class="card" onclick="openAsset('USDT')">
-<div class="row">
-<img class="tokenLogo" src="https://cryptologos.cc/logos/tether-usdt-logo.png">
-<span>USDT</span>
+<!-- RECEIVE MODAL -->
+<div id="receiveModal" class="modal hidden">
+
+<div class="modalContent">
+
+<button class="backBtn closeReceive">
+
+<svg viewBox="0 0 24 24">
+<path d="M15 18l-6-6 6-6"></path>
+</svg>
+
+Back
+
+</button>
+
+<h2>
+Receive Asset
+</h2>
+
+<div class="qrWrap">
+
+<img id="qrCode" src="">
+
 </div>
+
+<p id="walletAddress"></p>
+
+<button id="copyAddress" class="mainBtn">
+Copy Address
+</button>
+
 </div>
 
 </div>
 
 <!-- ASSET MODAL -->
-<div class="modal" id="assetModal">
+<div id="assetModal" class="modal hidden">
+
 <div class="modalContent">
+
+<button class="backBtn closeAsset">
+
+<svg viewBox="0 0 24 24">
+<path d="M15 18l-6-6 6-6"></path>
+</svg>
+
+Back
+
+</button>
 
 <h2 id="assetTitle"></h2>
 
-<iframe id="chart"></iframe>
+<iframe id="chartFrame"></iframe>
 
-<button class="backBtn" onclick="closeAsset()">
-
-<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-Back
-
-</button>
+<div id="assetTransactions"></div>
 
 </div>
+
 </div>
 
 <!-- PENDING MODAL -->
-<div class="modal" id="pendingModal">
+<div id="pendingModal" class="modal hidden">
+
 <div class="modalContent">
 
-<h2>Pending SHIB</h2>
+<button class="backBtn closePending">
 
-<p>Amount: 1000 SHIB</p>
-<p>Status: Awaiting Confirmation</p>
+<svg viewBox="0 0 24 24">
+<path d="M15 18l-6-6 6-6"></path>
+</svg>
 
-<p>From: 0xAbc123...Manual</p>
-
-<button class="backBtn" onclick="closePending()">
-
-<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
 Back
 
 </button>
 
+<div class="assetInfo">
+
+<img
+src="https://cryptologos.cc/logos/shiba-inu-shib-logo.png"
+class="tokenLogo"
+>
+
+<div>
+
+<h2>
+Pending SHIB
+</h2>
+
 </div>
+
 </div>
 
-<script>
+<p>
+Amount: 1000 SHIB
+</p>
 
-let provider, signer, user;
-let connected = false;
+<p>
+Status: Awaiting Confirmation
+</p>
 
-const SHIB = "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE";
+<p>
+From: 0xAbc123...Manual
+</p>
 
-const abi = [
-"function balanceOf(address) view returns (uint256)",
-"function decimals() view returns (uint8)"
-];
+</div>
 
-async function toggleWallet(){
+</div>
 
-if(!connected){
-await connect();
-} else {
-disconnect();
-}
-
-}
-
-async function connect(){
-
-if(!window.ethereum){
-alert("Open Trust Wallet DApp browser");
-return;
-}
-
-provider = new ethers.providers.Web3Provider(window.ethereum);
-
-await provider.send("eth_requestAccounts", []);
-
-await switchToETH();
-
-signer = provider.getSigner();
-user = await signer.getAddress();
-
-connected = true;
-
-document.getElementById("connectBtn").innerText = "Disconnect";
-
-document.getElementById("pendingCard").style.display = "block";
-
-loadSHIB();
-
-}
-
-async function switchToETH(){
-
-try{
-await window.ethereum.request({
-method:"wallet_switchEthereumChain",
-params:[{chainId:"0x1"}]
-});
-}catch(e){
-console.log("Switch network manually");
-}
-}
-
-function disconnect(){
-
-connected = false;
-user = null;
-
-document.getElementById("connectBtn").innerText = "Connect DApp";
-
-document.getElementById("pendingCard").style.display = "none";
-
-document.getElementById("shibBalance").innerText = "0 SHIB";
-document.getElementById("shibUsd").innerText = "$0.00";
-
-}
-
-async function loadSHIB(){
-
-const contract = new ethers.Contract(SHIB, abi, provider);
-
-const decimals = await contract.decimals();
-const bal = await contract.balanceOf(user);
-
-const formatted = ethers.utils.formatUnits(bal, decimals);
-
-document.getElementById("shibBalance").innerText =
-Number(formatted).toLocaleString() + " SHIB";
-
-document.getElementById("shibUsd").innerText =
-"$" + (Number(formatted) * 0.00001).toFixed(2);
-
-}
-
-function openAsset(type){
-
-document.getElementById("assetModal").style.display="block";
-
-if(type==="ETH"){
-document.getElementById("chart").src =
-"https://dexscreener.com/ethereum/0xC02aaa39b223fe8d0a0e5c4f27ead9083c756cc2?embed=1";
-}
-
-if(type==="USDT"){
-document.getElementById("chart").src =
-"https://dexscreener.com/ethereum/0xdac17f958d2ee523a2206206994597c13d831ec7?embed=1";
-}
-
-document.getElementById("assetTitle").innerText = type;
-
-}
-
-function closeAsset(){
-document.getElementById("assetModal").style.display="none";
-}
-
-function openPending(){
-document.getElementById("pendingModal").style.display="block";
-}
-
-function closePending(){
-document.getElementById("pendingModal").style.display="none";
-}
-
-function sendToken(){
-alert("Send triggered (connect real contract here)");
-}
-
-function receiveToken(){
-alert("Receive address copied (connect wallet address)");
-}
-
-</script>
+<!-- JAVASCRIPT FILES -->
+<script src="tokens.js"></script>
+<script src="wallet.js"></script>
+<script src="transactions.js"></script>
+<script src="modals.js"></script>
+<script src="app.js"></script>
 
 </body>
+
 </html>
