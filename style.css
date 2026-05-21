@@ -1,0 +1,25 @@
+body{
+margin:0;
+background:#0d0d0d;
+font-family:Arial;
+color:white;
+text-align:center;
+}
+
+.app{
+margin-top:100px;
+}
+
+button{
+padding:15px 25px;
+border:none;
+border-radius:12px;
+background:#00ff88;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+h1{
+color:#00ff88;
+}
