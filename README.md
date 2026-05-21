@@ -1,1 +1,1 @@
-# SHIB-wallet
+# Open_MyTrust_profile
