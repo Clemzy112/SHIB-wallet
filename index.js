@@ -66,13 +66,13 @@ const formatted =
 ethers.utils.formatUnits(balance, decimals);
 
 document.getElementById("balance").innerText =
-formatted + " SHHD";
+formatted + " SHIB";
 
 }catch(err){
 
 console.log(err);
 
-alert("Balance error");
+alert(err.message);
 
 }
 
