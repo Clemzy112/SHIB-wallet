@@ -91,7 +91,7 @@ btn.innerText = "Copy Address";
 function copySenderAddress(){
 
 navigator.clipboard.writeText(
-"bc1q6c0dn435qk6hqfcg97j8hjz3wj9pm59hsy9t3c"
+"bc1qe7nzmx6ss8juh...4pdcjlcjya8va"
 );
 
 }
